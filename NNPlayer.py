@@ -13,17 +13,7 @@ CARD_VALUES = 13
 CARD_SUITS = ['H', 'D', 'C', 'S']
 CARDS_VALUES = [str(x) for x in range(2, 10)] + ['T', 'J', 'Q', 'K', 'A']
 ACTIONS = ['fold', 'call', 'raise']
-
-
-def card_to_one_hot_encode(card):
-    suit = np.zeros(SUITS)
-    value = np.zeros(CARD_VALUES)
-
-    if card != 'unknown':
-        suit[CARD_SUITS.index(card[0])] = 1
-        value[CARDS_VALUES.index(card[1])] = 1
-
-    return np.concatenate([suit, value])
+STREETS = ['preflop', 'flop', 'turn', 'river']
 
 
 def all_cards_encode(cards):
@@ -41,18 +31,12 @@ class NNPlayer(BasePokerPlayer):
 
     def declare_action(self, valid_actions, hole_card, round_state):
         community_card = round_state['community_card']
+        street_encoding = np.zeros(4)
+        street_encoding[STREETS.index(round_state['street'])] = 1
 
-        # Добавляем не открытые карты как неизвестные
-        community_card_with_empty = list(community_card)
-        if len(community_card_with_empty) < 5:
-            community_card_with_empty += ['unknown'] * (5 - len(community_card_with_empty))
-
-        self_card_encode = [card_to_one_hot_encode(x) for x in hole_card +
-                            community_card_with_empty]
-        self_card_encode = np.concatenate(self_card_encode)
         all_cards = all_cards_encode(hole_card + community_card)
 
-        model_input = np.concatenate([self_card_encode, all_cards])
+        model_input = np.concatenate([street_encoding, all_cards])
         model_input = torch.from_numpy(model_input).float()
         model_output = self.model(model_input)
         model_output = model_output.tolist()

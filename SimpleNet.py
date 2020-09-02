@@ -5,7 +5,7 @@ import torch.nn.functional as F
 class SimpleNet(nn.Module):
     def __init__(self):
         super().__init__()
-        self.inputSize = 171
+        self.inputSize = 56
         self.hiddenSize = self.inputSize * 2 + 1
         self.outputSize = 3
 
